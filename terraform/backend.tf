@@ -4,5 +4,5 @@ terraform {
     key    = "ecs/samaz-arts-app/terraform.tfstate"
     region = "us-east-1"
   }
-  
 }
+##
