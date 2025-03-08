@@ -1,18 +1,7 @@
-# Stage 1: Build Stage
-FROM node:22-slim AS build
-WORKDIR /samaz-app
-
-# Copy package.json and package-lock.json first for caching layer optimization
+FROM node:14
+WORKDIR /usr/src/app
 COPY package*.json ./
-
-# Install dependencies
 RUN npm install
-
-# Copy application source code
 COPY . .
-
-# Expose the application port
 EXPOSE 3000
-
-# Command to run the application
 CMD ["npm", "start"]
