@@ -38,8 +38,8 @@ resource "aws_ecs_task_definition" "task" {
       essential     = true
       portMappings  = [
         {
-          containerPort = 80
-          hostPort      = 80
+          containerPort = 3000
+          hostPort      = 3000
         }
       ]
     }
@@ -60,7 +60,7 @@ resource "aws_ecs_service" "service" {
   load_balancer {
     target_group_arn = aws_lb_target_group.app_target_group.arn
     container_name   = var.app_name
-    container_port   = 80
+    container_port   = 3000
   }
 }
 
@@ -74,7 +74,7 @@ resource "aws_lb" "app_lb" {
 
 resource "aws_lb_target_group" "app_target_group" {
   name        = "${var.app_name}-tg"
-  port        = 80
+  port        = 3000
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
   target_type = "ip"
