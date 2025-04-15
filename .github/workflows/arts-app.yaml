@@ -26,19 +26,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: sonar
     steps:
-      - name: 📥 Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-
-      - name: 📦 Install Dependencies
-        run: npm install
-
-      - name: 🧪 Run Tests
-        run: npm test
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 18
+    - run: npm ci
+    - run: npm test
 
   docker-build-and-push:
     name: 🐳 Build and Push Docker Image
