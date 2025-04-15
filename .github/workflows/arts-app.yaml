@@ -87,6 +87,7 @@ jobs:
           REGISTRY: ${{ secrets.REGISTRY  }}
           REPOSITORY: ${{ secrets.REPOSITORY }}
           IMAGE_TAG: ${{ secrets.IMAGE_TAG }}
+          REGION: ${{ secrets.AWS_REGION }}
         run: |
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
