@@ -7,13 +7,13 @@ variable "region" {
 variable "ecs_cluster_name" {
   description = "The name of the ECS cluster"
   type        = string
-  default     = "samaz-arts_app_cluster"
+  default     = "my_cluster"
 }
 
 variable "app_name" {  # Fixed variable name (underscore instead of hyphen)
   description = "The name of the application"
   type        = string
-  default     = "samaz-arts-app"
+  default     = "my_service"
 }
 
 variable "vpc_id" {
