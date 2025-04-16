@@ -26,12 +26,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: sonar
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version: 18
-    - run: npm install
-    # - run: npm test
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - run: npm install
+      # - run: npm test
 
   docker-build-and-push:
     name: 🐳 Build and Push Docker Image
@@ -78,34 +78,26 @@ jobs:
           sudo apt-get update -y
           sudo apt-get install -y trivy
 
-      - name: Checkout repo
-        uses: actions/checkout@v3
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4 # More information on this action can be found below in the 'AWS Credentials' section
+      - name: 🔐 Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: arn:aws:iam::123456789012:role/my-github-actions-role
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Build, tag, and push docker image to Amazon ECR
-        env:
-          REGISTRY: ${{ secrets.REGISTRY  }}
-          REPOSITORY: ${{ secrets.REPOSITORY }}
-          IMAGE_TAG: ${{ secrets.IMAGE_TAG }}
-          REGION: ${{ secrets.AWS_REGION }}
-
+      - name: 🔐 Login to Amazon ECR
         run: |
-          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
-          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | \
+          docker login --username AWS --password-stdin \
+          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+
+      - name: 📥 Pull ECR Image
+        run: |
+          docker pull ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.REPOSITORY }}:${{ secrets.IMAGE_TAG }}
 
       - name: 🔍 Run Trivy Scan
         run: |
-          trivy image ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.REPOSITORY }}:${{ secrets.IMAGE_TAG }} \
-            --format json -o trivy-image-report.json
+          trivy image ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.REPOSITORY }}:${{ secrets.IMAGE_TAG }} --format json -o trivy-image-report.json
 
       - name: 📤 Upload Trivy Report
         uses: actions/upload-artifact@v4
@@ -134,7 +126,7 @@ jobs:
       - name: 🚢 Deploy Image to ECS
         uses: jaroldwong/ecr-push-and-ecs-deploy@v1.1
         with:
-          ecr-registry: ${{ secrets.REGISTRY }}
+          ecr-registry: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
           ecr-repository: ${{ secrets.REPOSITORY }}
           ecs-cluster: ${{ secrets.ECS_CLUSTER }}
           ecs-service: ${{ secrets.ECS_SERVICE }}
